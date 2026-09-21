@@ -1,0 +1,23 @@
+# As part of SupplyChain KPIs to track for the weekly supply chain leadership meeting, 
+# report the net revenue for each product category from the last seven days.
+
+SELECT 
+	p.Category
+	,SUM(acps.Revenue) AS 'TotalRevenue'
+	,SUM(acps.Cost) AS 'TotalCost'
+	,ROUND(SUM(acps.Revenue) - SUM(acps.Cost), 2) AS 'NetRevenue'
+FROM 
+	(SELECT [Date]
+      ,[ProductID]
+      ,[Revenue]
+      ,[Cost]
+	FROM [SupplyChain].[dbo].[AllChannelProductSales]
+	WHERE [ProductID] IS NOT NULL) acps
+LEFT JOIN 
+	(SELECT [ProductID], [Category]
+	FROM [SupplyChain].[dbo].[AllProducts]
+	WHERE [ProductID] IS NOT NULL) p
+ON acps.ProductID = p.ProductID
+WHERE acps.Date >= DATEADD(day, -7, GETDATE())
+	AND [Category] IS NOT NULL
+GROUP BY p.Category 
